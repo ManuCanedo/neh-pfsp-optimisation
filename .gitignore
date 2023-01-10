@@ -30,3 +30,11 @@
 *.exe
 *.out
 *.app
+
+# Dev directories
+cpp/bin
+cpp/dist
+.vscode
+
+# Dev files
+.clang-format
