@@ -2,6 +2,7 @@
 #define NEH_HPP
 
 #include <algorithm>
+#include <chrono>
 #include <cstdint>
 #include <limits>
 #include <vector>
@@ -35,7 +36,7 @@ struct Solution {
     Solution(const Solution&) = delete;
     Solution& operator=(const Solution&) = delete;
     Solution(Solution&&) noexcept = default;
-    Solution& operator=(Solution&&) = default;
+    Solution& operator=(Solution&&)  noexcept = default;
 
     std::vector<Job<NumericType>> jobs;
     size_t number_jobs;
@@ -46,41 +47,37 @@ struct Solution {
 template<typename NumericType>
 class Matrix {
 public:
-    Matrix(size_t rows, size_t cols) : data_(rows * cols), cols_(cols) {}
+    Matrix(size_t rows, size_t cols) : data_(rows , std::vector<NumericType>(cols, 0)), cols_(cols) {}
 
-    NumericType& at(size_t i, size_t j) {
-        return data_[i * cols_ + j];
+    NumericType& operator()(size_t i, size_t j) {
+        return data_[i][j];
     }
-    const NumericType& at(size_t i, size_t j) const {
-        return data_[i * cols_ + j];
+    const NumericType& operator()(size_t i, size_t j) const {
+        return data_[i][j];
     }
 
 private:
-    std::vector<NumericType> data_;
+    std::vector<std::vector<NumericType>> data_;
     size_t cols_;
 };
 
 template <typename NumericType>
 auto calculate_e_mat(const Solution<NumericType> &solution, const size_t index, Matrix<NumericType>& e_mat)
 {
-    const NumericType* pt_i = solution.jobs[0].processing_times.data();
-
     // Calculate element (0, 0)
-    e_mat.at(0, 0) = pt_i[0];
+    e_mat(0, 0) = solution.jobs[0].processing_times[0];
 
     // Calculate elements (0, j != 0)
     for (size_t j = 1; j < solution.number_machines; ++j) {
-        e_mat.at(0, j) = pt_i[j] + e_mat.at(0, j-1);
+        e_mat(0, j) = solution.jobs[0].processing_times[j] + e_mat(0, j-1);
     }
     for (size_t i = 1; i <= index; ++i) {
-        pt_i = solution.jobs[i].processing_times.data();
-
         // Calculate element (i != 0, 0)
-        e_mat.at(i, 0) = pt_i[0] + e_mat.at(i-1, 0);
+        e_mat(i, 0) = solution.jobs[i].processing_times[0] + e_mat(i-1, 0);
 
         // Calculate element (i != 0, j != 0)
         for (size_t j = 1; j < solution.number_machines; ++j) {
-            e_mat.at(i, j) =  pt_i[j] + std::max(e_mat.at(i-1, j), e_mat.at(i, j-1));
+            e_mat(i, j) =  solution.jobs[i].processing_times[j] + std::max(e_mat(i-1, j), e_mat(i, j-1));
         }
     }
 }
@@ -88,20 +85,16 @@ auto calculate_e_mat(const Solution<NumericType> &solution, const size_t index, 
 template <typename NumericType>
 auto calculate_q_mat(const Solution<NumericType> &solution, const size_t index, Matrix<NumericType>& q_mat)
 {
-    const NumericType* pt_i = nullptr;
-
     // Set row (index, j) to 0
     for (size_t j = 0; j < solution.number_machines; ++j) {
-        q_mat.at(index, j) = 0;
+        q_mat(index, j) = 0;
     }
     // Calculate elements (i != index, j)
     for (ssize_t i = index - 1; i >= 0; --i) {
-        pt_i = solution.jobs[i].processing_times.data();
-
         for (ssize_t j = solution.number_machines - 1; j >= 0; --j) {
-            q_mat.at(i, j) = pt_i[j] + std::max(
-                    i == index - 1 ? 0 : q_mat.at(i+1, j),
-                    j == solution.number_machines - 1 ? 0 : q_mat.at(i, j+1));
+            q_mat(i, j) = solution.jobs[i].processing_times[j] + std::max(
+                    i == index - 1 ? 0 : q_mat(i+1, j),
+                    j == solution.number_machines - 1 ? 0 : q_mat(i, j+1));
         }
     }
 }
@@ -109,22 +102,20 @@ auto calculate_q_mat(const Solution<NumericType> &solution, const size_t index, 
 template <typename NumericType>
 void calculate_f_mat(const Solution<NumericType> &solution, const size_t index, const Matrix<NumericType>& e_mat, Matrix<NumericType>& f_mat)
 {
-    const NumericType* pt_index = solution.jobs[index].processing_times.data();
-
     // Calculate element (0, 0)
-    f_mat.at(0, 0) = pt_index[0];
+    f_mat(0, 0) = solution.jobs[index].processing_times[0];
 
     // Calculate elements (0, j != 0)
     for (size_t j = 1; j < solution.number_machines; ++j) {
-        f_mat.at(0, j) = pt_index[j] + f_mat.at(0, j-1);
+        f_mat(0, j) = solution.jobs[index].processing_times[j] + f_mat(0, j-1);
     }
     for (size_t i = 1; i <= index; ++i) {
         // Calculate element (i != 0, 0)
-        f_mat.at(i, 0) =  pt_index[0] + e_mat.at(i-1, 0);
+        f_mat(i, 0) =  solution.jobs[index].processing_times[0] + e_mat(i-1, 0);
 
         // Calculate element (i != 0, j != 0)
         for (size_t j = 1; j < solution.number_machines; ++j) {
-            f_mat.at(i, j) =  pt_index[j] + std::max(e_mat.at(i-1, j), f_mat.at(i, j-1));
+            f_mat(i, j) =  solution.jobs[index].processing_times[j] + std::max(e_mat(i-1, j), f_mat(i, j-1));
         }
     }
 }
@@ -139,12 +130,9 @@ auto try_shift_improve(Solution<NumericType> &solution, const size_t index, Matr
     auto best_makespan = std::numeric_limits<NumericType>::max();
 
     for (ssize_t i = 0; i <= index; ++i) {
-        auto max_sum = 0;
+        auto max_sum = NumericType{0};
         for (size_t j = 0; j < solution.number_machines; ++j) {
-            const auto sum = f_mat.at(i, j) + eq_mat.at(i, j);
-            if (sum > max_sum) {
-                max_sum = sum;
-            }
+            max_sum = std::max(f_mat(i, j) + eq_mat(i, j), max_sum);
         }
         if (max_sum < best_makespan) {
             best_index = i;
@@ -171,14 +159,18 @@ auto solve(std::vector<Job<NumericType>>&& jobs, const size_t number_jobs, const
     auto f_mat = Matrix<NumericType>(number_jobs, number_machines);
     auto solution = Solution<NumericType>{number_jobs, number_machines};
 
+    const auto start = std::chrono::high_resolution_clock::now();
+
     std::sort(jobs.begin(), jobs.end(), [](auto&& job1, auto&& job2) {
-        return job1.total_processing_time > job2.total_processing_time;
+        return job1.total_processing_time >= job2.total_processing_time;
     });
     for (size_t i = 0; i < jobs.size(); ++i) {
         solution.jobs.emplace_back(std::move(jobs[i]));
         try_shift_improve(solution, i, eq_mat, f_mat);
     }
-    return solution;
+
+    const auto end = std::chrono::high_resolution_clock::now();
+    return std::tuple{std::move(solution), std::chrono::duration_cast<std::chrono::microseconds>(end - start)};
 }
 
 template <typename NumericType>

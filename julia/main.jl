@@ -29,13 +29,28 @@ function main()
     instances = read_instances(directory, instances_filename)
 
     for instance in instances
-        println("Instance name: ", instance)
+        runs = 200
+        min_time = Inf
+        max_time = 0
+        elapsed_accum = 0
 
-        jobs, number_jobs, number_machines = read_instance_data(directory, instance)
-        println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
-        solution = @time solve_neh!(jobs, number_jobs, number_machines)
-        println("NEH makespan: ", calculate_makespan(solution))
-        println("NEH makespan with Taillard's acceleration: ", solution.makespan)
+        # println("Instance name: ", instance)
+
+        for i in 1:runs
+            jobs, number_jobs, number_machines = read_instance_data(directory, instance)
+            # println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
+            
+            solution, elapsed = solve_neh!(jobs, number_jobs, number_machines)
+            
+            # println("NEH makespan: ", calculate_makespan(solution))
+            # println("NEH makespan with Taillard's acceleration: ", solution.makespan)
+            min_time = min(min_time, elapsed)
+            max_time = max(max_time, elapsed)
+            elapsed_accum += elapsed
+        end
+        println("elapsed avg: ", elapsed_accum / runs * 1000)
+        println("elapsed min: ", min_time * 1000)
+        println("elapsed max: ", max_time * 1000)
     end
 end
 

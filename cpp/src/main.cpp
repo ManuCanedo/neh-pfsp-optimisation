@@ -3,6 +3,8 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <limits>
+#include <ratio>
 #include <sstream>
 #include <string>
 #include <tuple>
@@ -10,11 +12,13 @@
 
 #include "neh.hpp"
 
+#define BENCHMARK
+
 namespace {
 using namespace std::literals;
 
-constexpr auto* DATA_PATH = "data";
-constexpr auto* INSTANCES_FILENAME = "instances";
+constexpr auto* DATA_PATH = "data/";
+constexpr auto* INSTANCES_FILENAME = "instances.txt";
 
 auto split(const std::string& str, char delim) {
     auto sstream = std::stringstream{str};
@@ -38,19 +42,20 @@ auto get_lines(const std::string& filepath) {
     return out;
 }
 
+template <typename InstanceDataType>
 auto read_instance_data(const std::string& filepath) {
   const auto lines = get_lines(filepath);
   const auto dimensions = split(lines[1], ' ');
   const auto number_jobs = std::stoull(dimensions[0]);
   const auto number_machines = std::stoull(dimensions[1]);
 
-  auto processing_times = std::vector<uint64_t>{};
-  auto jobs = std::vector<neh::Job<uint64_t>>{};
+  auto processing_times = std::vector<InstanceDataType>{};
+  auto jobs = std::vector<neh::Job<InstanceDataType>>{};
   jobs.reserve(number_jobs);
 
   for (size_t i = 0; i < number_jobs; ++i) {
     processing_times.clear();
-    auto time_accum = uint64_t{0};
+    auto time_accum = InstanceDataType{0};
 
     for (const auto& time_str : split(lines[i + 3], '\t')) {
       const auto time = std::stoull(time_str);
@@ -65,21 +70,38 @@ auto read_instance_data(const std::string& filepath) {
 
 int main() {
   const auto directory = std::string{DATA_PATH};
-  const auto filename = std::string{INSTANCES_FILENAME};
 
-  for (const auto& instance : get_lines(directory + "/" + filename + ".txt")) {
-    auto [jobs, number_jobs, number_machines] = read_instance_data(directory + "/" + instance + ".txt");
-    std::cout << "Number of Jobs: " << number_jobs
-              << "\nNumber of Machines: " << number_machines << "\n";
-
-    const auto start = std::chrono::high_resolution_clock::now();
-    const auto solution = neh::solve(std::move(jobs), number_jobs, number_machines);
-    const auto end = std::chrono::high_resolution_clock::now();
-
-    std::cout << "Makespan: " << neh::calculate_makespan(solution)
-              << "\nMakespan with Taillard's acceleration: " << solution.makespan
-              << "\nElapsed: " << std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()
-              << "us\n";
-    return 0;
+  for (const auto& instance : get_lines(directory + INSTANCES_FILENAME)) {
+#ifdef BENCHMARK
+    const auto runs = size_t{200};
+    auto max_elapsed = std::chrono::microseconds{0};
+    auto min_elapsed = std::chrono::microseconds{std::numeric_limits<int64_t>::max()};
+    auto elapsed_accum = std::chrono::microseconds{0};
+    for (size_t i = 0; i != runs; ++i) {
+#endif
+      auto [jobs, number_jobs, number_machines] = read_instance_data<uint32_t>(directory + "/" + instance + ".txt");
+#ifndef BENCHMARK
+      std::cout << "Number of Jobs: " << number_jobs
+                << "\nNumber of Machines: " << number_machines << "\n";
+#endif
+      const auto start = std::chrono::high_resolution_clock::now();
+      const auto [solution, elapsed] = neh::solve(std::move(jobs), number_jobs, number_machines);
+      const auto end = std::chrono::high_resolution_clock::now();
+#ifndef BENCHMARK
+      std::cout << "Makespan: " << neh::calculate_makespan(solution)
+                << "\nMakespan with Taillard's acceleration: " << solution.makespan
+                << "\nElapsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count()
+                << "ms\n";
+#endif
+#ifdef BENCHMARK
+      max_elapsed = std::max(max_elapsed, elapsed);
+      min_elapsed = std::min(min_elapsed, elapsed);
+      elapsed_accum += elapsed;
+    }
+    std::cout << "elapsed avg: " << elapsed_accum.count() / runs << "us\n"
+              << "elapsed min: " << min_elapsed.count() << "us\n"
+              << "elapsed max: " << max_elapsed.count() << "us\n";
+#endif
   }
+  return 0;
 }
