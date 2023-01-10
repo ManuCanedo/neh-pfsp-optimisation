@@ -34,19 +34,21 @@ function main()
         max_time = 0
         elapsed_accum = 0
 
-        # println("Instance name: ", instance)
+        println("Instance name: ", instance)
 
         for i in 1:runs
             jobs, number_jobs, number_machines = read_instance_data(directory, instance)
-            # println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
-            
             solution, elapsed = solve_neh!(jobs, number_jobs, number_machines)
             
-            # println("NEH makespan: ", calculate_makespan(solution))
-            # println("NEH makespan with Taillard's acceleration: ", solution.makespan)
             min_time = min(min_time, elapsed)
             max_time = max(max_time, elapsed)
             elapsed_accum += elapsed
+            
+            if i == runs
+                println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
+                println("NEH makespan: ", calculate_makespan(solution))
+                println("NEH makespan with Taillard's acceleration: ", solution.makespan)
+            end
         end
         println("elapsed avg: ", elapsed_accum / runs * 1000)
         println("elapsed min: ", min_time * 1000)
