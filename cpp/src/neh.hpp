@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdint>
 #include <limits>
+#include <sys/types.h>
 #include <vector>
 
 namespace neh {
@@ -51,10 +52,11 @@ private:
 };
 
 template <typename NumericType>
-auto calculate_e_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
-                     Matrix<NumericType> &e_mat) {
+auto populate_e_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
+                    Matrix<NumericType> &e_mat) {
   // Calculate element (0, 0)
   e_mat(0, 0) = jobs[0].processing_times[0];
+
   // Calculate elements (0, j != 0)
   for (size_t j = 1; j < e_mat.width(); ++j) {
     e_mat(0, j) = jobs[0].processing_times[j] + e_mat(0, j - 1);
@@ -72,28 +74,45 @@ auto calculate_e_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
 }
 
 template <typename NumericType>
-auto calculate_q_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
-                     Matrix<NumericType> &q_mat) {
+auto populate_q_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
+                    Matrix<NumericType> &q_mat) {
   // Set row (index, j) to 0
   for (size_t j = 0; j < q_mat.width(); ++j) {
     q_mat(index, j) = 0;
   }
+  if (index < 1) {
+    return;
+  }
+  q_mat(index - 1, q_mat.width() - 1) =
+      jobs[index - 1].processing_times[q_mat.width() - 1];
+
+  for (ssize_t j = q_mat.width() - 2; j >= 0; --j) {
+    q_mat(index - 1, j) =
+        jobs[index - 1].processing_times[j] + q_mat(index - 1, j + 1);
+  }
+  if (index < 2) {
+    return;
+  }
   // Calculate elements (i != index, j)
-  for (ssize_t i = index - 1; i >= 0; --i) {
-    for (ssize_t j = q_mat.width() - 1; j >= 0; --j) {
+  for (ssize_t i = index - 2; i >= 0; --i) {
+    // Calculate element (i != 0, 0)
+    q_mat(i, q_mat.width() - 1) = jobs[i].processing_times[q_mat.width() - 1] +
+                                  q_mat(i + 1, q_mat.width() - 1);
+
+    for (ssize_t j = q_mat.width() - 2; j >= 0; --j) {
       q_mat(i, j) = jobs[i].processing_times[j] +
-                    std::max(i == index - 1 ? 0 : q_mat(i + 1, j),
-                             j == q_mat.width() - 1 ? 0 : q_mat(i, j + 1));
+                    std::max(q_mat(i + 1, j), q_mat(i, j + 1));
     }
   }
 }
 
 template <typename NumericType>
-void calculate_f_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
-                     const Matrix<NumericType> &e_mat,
-                     Matrix<NumericType> &f_mat) {
+void populate_f_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
+                    const Matrix<NumericType> &e_mat,
+                    Matrix<NumericType> &f_mat) {
   // Calculate element (0, 0)
   f_mat(0, 0) = jobs[index].processing_times[0];
+
   // Calculate elements (0, j != 0)
   for (size_t j = 1; j < f_mat.width(); ++j) {
     f_mat(0, j) = jobs[index].processing_times[j] + f_mat(0, j - 1);
@@ -101,6 +120,7 @@ void calculate_f_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
   for (size_t i = 1; i <= index; ++i) {
     // Calculate element (i != 0, 0)
     f_mat(i, 0) = jobs[index].processing_times[0] + e_mat(i - 1, 0);
+    
     // Calculate element (i != 0, j != 0)
     for (size_t j = 1; j < f_mat.width(); ++j) {
       f_mat(i, j) = jobs[index].processing_times[j] +
@@ -113,9 +133,9 @@ template <typename NumericType>
 auto try_shift_improve(Solution<NumericType> &solution, size_t index,
                        Matrix<NumericType> &eq_mat,
                        Matrix<NumericType> &f_mat) {
-  calculate_e_mat(solution.jobs, index, eq_mat);
-  calculate_f_mat(solution.jobs, index, eq_mat, f_mat);
-  calculate_q_mat(solution.jobs, index, eq_mat);
+  populate_e_mat(solution.jobs, index, eq_mat);
+  populate_f_mat(solution.jobs, index, eq_mat, f_mat);
+  populate_q_mat(solution.jobs, index, eq_mat);
   auto best_index = index;
   auto best_makespan = std::numeric_limits<NumericType>::max();
 

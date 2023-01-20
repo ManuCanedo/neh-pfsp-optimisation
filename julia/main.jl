@@ -15,7 +15,7 @@ function read_instance_data(directory::String, filename::String)
         end
         push!(jobs, Job(Vector{Int64}(processing_times), time_accum, i - 1))
     end
-    
+
     return Vector{Job}(jobs), number_jobs, number_machines
 end
 
@@ -39,11 +39,11 @@ function main()
         for i in 1:runs
             jobs, number_jobs, number_machines = read_instance_data(directory, instance)
             solution, elapsed = solve_neh!(jobs, number_jobs, number_machines)
-            
+
             min_time = min(min_time, elapsed)
             max_time = max(max_time, elapsed)
             elapsed_accum += elapsed
-            
+
             if i == runs
                 println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
                 println("NEH makespan: ", calculate_makespan(solution))

@@ -23,6 +23,7 @@ end
 
 function populate_e_mat!(solution::Solution, index::Int64, e_mat::Array{Int64})
     e_mat[1, 1] = solution.jobs[1].processing_times[1]
+
     @inbounds for j in 2:solution.number_machines
         e_mat[1, j] = solution.jobs[1].processing_times[j] + e_mat[1, j-1]
     end
@@ -36,15 +37,30 @@ end
 
 function populate_q_mat!(solution::Solution, index::Int64, q_mat::Array{Int64})
     q_mat[index, :] .= 0
-    @inbounds for i in index-1:-1:1, j in solution.number_machines:-1:1
-        i_factor = i == index - 1 ? 0 : q_mat[i+1, j]
-        j_factor = j == solution.number_machines ? 0 : q_mat[i, j+1]
-        q_mat[i, j] = solution.jobs[i].processing_times[j] + max(i_factor, j_factor)
+
+    if index < 2
+        return
+    end
+    q_mat[index-1, solution.number_machines] = solution.jobs[index-1].processing_times[solution.number_machines]
+
+    @inbounds for j in solution.number_machines-1:-1:1
+        q_mat[index-1, j] = solution.jobs[index-1].processing_times[j] + q_mat[index-1, j+1]
+    end
+    if index < 3
+        return
+    end
+    @inbounds for i in index-2:-1:1
+        q_mat[i, solution.number_machines] = solution.jobs[i].processing_times[solution.number_machines] + q_mat[i+1, solution.number_machines]
+
+        @inbounds for j in solution.number_machines-1:-1:1
+            q_mat[i, j] = solution.jobs[i].processing_times[j] + max(q_mat[i+1, j], q_mat[i, j+1])
+        end
     end
 end
 
 function populate_f_mat!(solution::Solution, index::Int64, e_mat::Array{Int64}, f_mat::Array{Int64})
     f_mat[1, 1] = solution.jobs[index].processing_times[1]
+
     @inbounds for j in 2:solution.number_machines
         f_mat[1, j] = solution.jobs[index].processing_times[j] + f_mat[1, j-1]
     end
