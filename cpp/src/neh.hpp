@@ -144,13 +144,13 @@ constexpr auto try_shift_improve(Solution<NumericType> &solution, size_t index,
   auto best_index = index;
   solution.makespan = std::numeric_limits<NumericType>::max();
 
-  for (ssize_t i = 0; i != index + 1; ++i) {
+  for (size_t i = 0; i != index + 1; ++i) {
     auto max_sum = NumericType{0};
 
     for (size_t j = 0; j != f_mat.width(); ++j) {
       max_sum = max(f_mat(i, j) + eq_mat(i, j), max_sum);
     }
-    if (max_sum <= solution.makespan) {
+    if (max_sum < solution.makespan) {
       best_index = i;
       solution.makespan = max_sum;
     }

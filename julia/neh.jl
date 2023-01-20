@@ -33,8 +33,9 @@ function populate_e_mat!(solution::Solution, index::Int64, e_mat::Array{Int64})
 end
 
 function populate_q_mat!(solution::Solution, index::Int64, q_mat::Array{Int64})
-    q_mat[index, :] .= 0
-
+    @inbounds for j in solution.number_machines:-1:1
+        q_mat[index, j] = 0
+    end
     if index == 1
         return
     end
@@ -63,7 +64,7 @@ function populate_f_mat!(solution::Solution, index::Int64, e_mat::Array{Int64}, 
     end
     @inbounds for i in 2:index
         f_mat[i, 1] = solution.jobs[index].processing_times[1] + e_mat[i-1, 1]
-        
+
         @inbounds for j in 2:solution.number_machines
             f_mat[i, j] = solution.jobs[index].processing_times[j] + max(e_mat[i-1, j], f_mat[i, j-1])
         end
@@ -79,22 +80,22 @@ function try_shift_improve!(solution::Solution, index::Int64, eq_mat::Array{Int6
 
     @inbounds for i in 1:index
         max_sum = 0
-        
+
         @inbounds for j in 1:solution.number_machines
             sum = f_mat[i, j] + eq_mat[i, j]
             if sum > max_sum
                 max_sum = sum
             end
         end
-        if max_sum <= solution.makespan
+        if max_sum < solution.makespan
             best_index = i
             solution.makespan = max_sum
         end
     end
     if best_index < index
         tmp = solution.jobs[index]
-        
-        @inbounds for i = index:-1:best_index+1
+
+        @inbounds for i in index:-1:best_index+1
             solution.jobs[i] = solution.jobs[i-1]
         end
         solution.jobs[best_index] = tmp
@@ -106,10 +107,10 @@ function solve_neh!(jobs::Vector{Job}, number_jobs::Int64, number_machines::Int6
     eq_mat = zeros(Int64, number_jobs, number_machines)
     f_mat = zeros(Int64, number_jobs, number_machines)
     solution = Solution(number_jobs, number_machines)
-    
+
     start_time = time()
 
-    sort!(jobs, by=v -> v.total_processing_time, rev=true)
+    sort!(jobs, alg=QuickSort, by=v -> v.total_processing_time, rev=true)
     push!(solution.jobs, jobs[1])
 
     @inbounds for i in 2:number_jobs
