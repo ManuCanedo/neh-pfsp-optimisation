@@ -11,6 +11,8 @@ mutable struct Solution
     makespan::Int64
 
     function Solution(number_jobs::Int64, number_machines::Int64)
+        @assert number_jobs > 1
+        @assert number_machines > 1
         return new([], number_jobs, number_machines, 0)
     end
 end
@@ -107,11 +109,13 @@ function solve_neh!(jobs::Vector{Job}, number_jobs::Int64, number_machines::Int6
     eq_mat = zeros(Int64, number_jobs, number_machines)
     f_mat = zeros(Int64, number_jobs, number_machines)
     solution = Solution(number_jobs, number_machines)
-
+    
     start_time = time()
 
     sort!(jobs, by=v -> v.total_processing_time, rev=true)
-    @inbounds for i in eachindex(jobs)
+    push!(solution.jobs, jobs[1])
+
+    @inbounds for i in 2:number_jobs
         push!(solution.jobs, jobs[i])
         try_shift_improve!(solution, i, eq_mat, f_mat)
     end

@@ -22,7 +22,8 @@ template <typename NumericType> struct Job {
 template <typename NumericType> struct Solution {
   Solution(size_t number_jobs, size_t number_machines)
       : number_jobs{number_jobs}, number_machines{number_machines} {
-    assert(number_machines > 0 && number_jobs > 1);
+    assert(number_jobs > 1);
+    assert(number_machines > 1);
     jobs.reserve(number_jobs);
   }
 
@@ -172,11 +173,13 @@ auto solve(std::vector<Job<NumericType>> &&jobs, size_t number_jobs,
   auto solution = Solution<NumericType>{number_jobs, number_machines};
 
   const auto start = std::chrono::high_resolution_clock::now();
-
+  
   std::sort(jobs.begin(), jobs.end(), [](auto &&job1, auto &&job2) {
     return job1.total_processing_time > job2.total_processing_time;
   });
-  for (size_t i = 0; i < jobs.size(); ++i) {
+  solution.jobs.emplace_back(std::move(jobs[0]));
+
+  for (size_t i = 1; i < jobs.size(); ++i) {
     solution.jobs.emplace_back(std::move(jobs[i]));
     try_shift_improve(solution, i, eq_mat, f_mat);
   }
