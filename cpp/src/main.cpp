@@ -53,16 +53,16 @@ auto read_instance_data(const std::string &filepath) {
   auto jobs = std::vector<neh::Job<InstanceDataType>>{};
   jobs.reserve(number_jobs);
 
-  for (size_t i = 0; i < number_jobs; ++i) {
+  for (size_t i = 0; i != number_jobs; ++i) {
     processing_times.clear();
     auto time_accum = InstanceDataType{0};
 
-    for (const auto &time_str : split(lines[i + 3], '\t')) {
+    for (auto &&time_str : split(lines[i + 3], '\t')) {
       const auto time = std::stoull(time_str);
       time_accum += time;
-      processing_times.push_back(time);
+      processing_times.emplace_back(time);
     }
-    jobs.emplace_back(std::move(processing_times), time_accum, i - 1);
+    jobs.emplace_back(std::move(processing_times), time_accum);
   }
   return std::tuple{jobs, number_jobs, number_machines};
 }

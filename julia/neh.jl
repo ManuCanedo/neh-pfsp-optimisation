@@ -75,7 +75,7 @@ function try_shift_improve!(solution::Solution, index::Int64, eq_mat::Array{Int6
     populate_f_mat!(solution, index, eq_mat, f_mat)
     populate_q_mat!(solution, index, eq_mat)
     best_index = index
-    best_makespan = Inf
+    solution.makespan = typemax(Int64)
 
     @inbounds for i in 1:index
         max_sum = 0
@@ -86,9 +86,9 @@ function try_shift_improve!(solution::Solution, index::Int64, eq_mat::Array{Int6
                 max_sum = sum
             end
         end
-        if max_sum < best_makespan
+        if max_sum <= solution.makespan
             best_index = i
-            best_makespan = max_sum
+            solution.makespan = max_sum
         end
     end
     if best_index < index
@@ -98,9 +98,6 @@ function try_shift_improve!(solution::Solution, index::Int64, eq_mat::Array{Int6
             solution.jobs[i] = solution.jobs[i-1]
         end
         solution.jobs[best_index] = tmp
-    end
-    if index == solution.number_jobs
-        solution.makespan = best_makespan
     end
     return best_index
 end
