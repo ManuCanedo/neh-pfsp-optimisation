@@ -3,9 +3,7 @@
 
 #include <algorithm>
 #include <chrono>
-#include <cstdint>
 #include <limits>
-#include <sys/types.h>
 #include <vector>
 
 namespace neh {
@@ -80,7 +78,7 @@ auto populate_q_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
   for (size_t j = 0; j < q_mat.width(); ++j) {
     q_mat(index, j) = 0;
   }
-  if (index < 1) {
+  if (index == 0) {
     return;
   }
   q_mat(index - 1, q_mat.width() - 1) =
@@ -90,7 +88,7 @@ auto populate_q_mat(const std::vector<Job<NumericType>> &jobs, size_t index,
     q_mat(index - 1, j) =
         jobs[index - 1].processing_times[j] + q_mat(index - 1, j + 1);
   }
-  if (index < 2) {
+  if (index == 1) {
     return;
   }
   // Calculate elements (i != index, j)
@@ -141,6 +139,7 @@ auto try_shift_improve(Solution<NumericType> &solution, size_t index,
 
   for (ssize_t i = 0; i <= index; ++i) {
     auto max_sum = NumericType{0};
+
     for (size_t j = 0; j < f_mat.width(); ++j) {
       max_sum = std::max(f_mat(i, j) + eq_mat(i, j), max_sum);
     }
@@ -151,6 +150,7 @@ auto try_shift_improve(Solution<NumericType> &solution, size_t index,
   }
   if (best_index < index) {
     auto tmp = std::move(solution.jobs[index]);
+
     for (size_t j = index; j >= best_index + 1; --j) {
       solution.jobs[j] = std::move(solution.jobs[j - 1]);
     }
@@ -189,6 +189,7 @@ template <typename NumericType>
 auto calculate_makespan(const Solution<NumericType> &solution) {
   auto t_mat =
       Matrix<NumericType>{solution.number_jobs, solution.number_machines};
+
   for (size_t i = 0; i < solution.number_jobs; ++i) {
     for (size_t j = 0; j < t_mat.width(); ++j) {
       t_mat(i, j) =
