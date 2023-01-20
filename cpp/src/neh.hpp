@@ -2,6 +2,7 @@
 #define NEH_HPP
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <limits>
 #include <vector>
@@ -21,6 +22,7 @@ template <typename NumericType> struct Job {
 template <typename NumericType> struct Solution {
   Solution(size_t number_jobs, size_t number_machines)
       : number_jobs{number_jobs}, number_machines{number_machines} {
+    assert(number_machines > 0 && number_jobs > 1);
     jobs.reserve(number_jobs);
   }
 
