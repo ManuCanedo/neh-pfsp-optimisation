@@ -1,7 +1,6 @@
 struct Job
     processing_times::Vector{Int64}
     total_processing_time::Int64
-    id::Int64
 end
 
 mutable struct Solution
@@ -102,7 +101,7 @@ function try_shift_improve!(
     populate_q_mat!(solution, index, eq_mat)
 
     best_index = index
-    solution.makespan = typemax(Int64)
+    best_makespan = typemax(Int64)
 
     @inbounds for i = 1:index
         max_sum = 0
@@ -110,20 +109,19 @@ function try_shift_improve!(
         @inbounds for j = 1:solution.number_machines
             max_sum = max(f_mat[i, j] + eq_mat[i, j], max_sum)
         end
-        if max_sum < solution.makespan
+        if max_sum < best_makespan
             best_index = i
-            solution.makespan = max_sum
+            best_makespan = max_sum
         end
     end
     if best_index < index
         rotate_right(solution.jobs, best_index, index)
-    end
-    return best_index
+    update_solution(solution, index, eq_mat, f_mat)
 end
 
 function solve_neh!(jobs::Vector{Job}, number_jobs::Int64, number_machines::Int64)
-    eq_mat = zeros(Int64, number_jobs, number_machines)
-    f_mat = zeros(Int64, number_jobs, number_machines)
+    eq_mat = Array{Int64}(undef, number_jobs, number_machines)
+    f_mat = Array{Int64}(undef, number_jobs, number_machines)
     solution = Solution(number_jobs, number_machines)
 
     start_time = time()
@@ -141,7 +139,7 @@ function solve_neh!(jobs::Vector{Job}, number_jobs::Int64, number_machines::Int6
 end
 
 function calculate_makespan(solution::Solution)
-    times = zeros(Int64, solution.number_jobs, solution.number_machines)
+    times = Array{Int64}(undef, solution.number_jobs, solution.number_machines)
 
     @inbounds for i = 1:solution.number_jobs
         @inbounds for j = 1:solution.number_machines
