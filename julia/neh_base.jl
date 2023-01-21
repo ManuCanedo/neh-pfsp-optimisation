@@ -45,9 +45,12 @@ function __populate_q_mat!(solution, index)
             if i == index
                 q[index][j] = 0
             elseif i == index - 1 && j == number_machines
-                q[index-1][number_machines] = solution.jobs[index-1].processing_times[number_machines]
+                q[index-1][number_machines] =
+                    solution.jobs[index-1].processing_times[number_machines]
             elseif j == number_machines
-                q[i][number_machines] = solution.jobs[i].processing_times[number_machines] + q[i+1][number_machines]
+                q[i][number_machines] =
+                    solution.jobs[i].processing_times[number_machines] +
+                    q[i+1][number_machines]
             elseif i == index - 1
                 q[index-1][j] = solution.jobs[index-1].processing_times[j] + q[index-1][j+1]
             else
@@ -117,7 +120,7 @@ function __solve_neh!(jobs, number_jobs, number_machines)
 
     start_time = time()
 
-    sort!(jobs, alg=QuickSort, by=v -> v.total_processing_time, rev=true)
+    sort!(jobs, alg = QuickSort, by = v -> v.total_processing_time, rev = true)
     push!(solution.jobs, jobs[1])
 
     for i = 2:1:number_jobs

@@ -1,0 +1,42 @@
+Instance name: tai031_50_5
+	NEH makespan: 2733
+	NEH makespan with Taillard's acceleration: 2733
+	elapsed avg: 20us
+	elapsed min: 17us
+	elapsed max: 46us
+Instance name: tai060_50_20
+	NEH makespan: 4079
+	NEH makespan with Taillard's acceleration: 4079
+	elapsed avg: 54us
+	elapsed min: 53us
+	elapsed max: 83us
+Instance name: tai071_100_10
+	NEH makespan: 5881
+	NEH makespan with Taillard's acceleration: 5881
+	elapsed avg: 129us
+	elapsed min: 125us
+	elapsed max: 154us
+Instance name: tai081_100_20
+	NEH makespan: 6594
+	NEH makespan with Taillard's acceleration: 6594
+	elapsed avg: 224us
+	elapsed min: 217us
+	elapsed max: 241us
+Instance name: tai091_200_10
+	NEH makespan: 10942
+	NEH makespan with Taillard's acceleration: 10942
+	elapsed avg: 519us
+	elapsed min: 505us
+	elapsed max: 587us
+Instance name: tai101_200_20
+	NEH makespan: 11684
+	NEH makespan with Taillard's acceleration: 11684
+	elapsed avg: 922us
+	elapsed min: 896us
+	elapsed max: 970us
+Instance name: tai117_500_20
+	NEH makespan: 26854
+	NEH makespan with Taillard's acceleration: 26854
+	elapsed avg: 5734us
+	elapsed min: 5610us
+	elapsed max: 5914us

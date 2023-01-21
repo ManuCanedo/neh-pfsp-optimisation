@@ -6,7 +6,7 @@ function read_instance_data(directory::String, filename::String)
     lines = readlines(filepath)
     number_jobs, number_machines = map(x -> parse(Int64, x), split(lines[2], r"[' '\t]+"))
     jobs = []
-    for i in 1:number_jobs
+    for i = 1:number_jobs
         processing_times = []
         time_accum = 0
         for (_, time_str) in enumerate(split(lines[i+3], "\t"))
@@ -25,7 +25,7 @@ function __read_instance_data(directory::String, filename::String)
     lines = readlines(filepath)
     number_jobs, number_machines = map(x -> parse(Int64, x), split(lines[2], r"[' '\t]+"))
     __jobs = []
-    for i in 1:number_jobs
+    for i = 1:number_jobs
         processing_times = []
         time_accum = 0
         for (_, time_str) in enumerate(split(lines[i+3], "\t"))
@@ -56,7 +56,7 @@ function main()
         println("Instance name: ", instance)
         println("\tBase implementation:")
 
-        for i in 1:runs
+        for i = 1:runs
             __jobs, number_jobs, number_machines = __read_instance_data(directory, instance)
             __solution, elapsed = __solve_neh!(__jobs, number_jobs, number_machines)
 
@@ -66,7 +66,10 @@ function main()
 
             if i == runs
                 println("\t\tNEH makespan: ", __calculate_makespan(__solution))
-                println("\t\tNEH makespan with Taillard's acceleration: ", __solution.makespan)
+                println(
+                    "\t\tNEH makespan with Taillard's acceleration: ",
+                    __solution.makespan,
+                )
             end
         end
         println("\t\telapsed avg: ", elapsed_accum / runs, "us")
@@ -78,7 +81,7 @@ function main()
         elapsed_accum = 0
 
         println("\tOptimised implementation:")
-        for i in 1:runs
+        for i = 1:runs
             jobs, number_jobs, number_machines = read_instance_data(directory, instance)
             solution, elapsed = solve_neh!(jobs, number_jobs, number_machines)
 
@@ -88,7 +91,10 @@ function main()
 
             if i == runs
                 println("\t\tNEH makespan: ", calculate_makespan(solution))
-                println("\t\tNEH makespan with Taillard's acceleration: ", solution.makespan)
+                println(
+                    "\t\tNEH makespan with Taillard's acceleration: ",
+                    solution.makespan,
+                )
             end
         end
         println("\t\telapsed avg: ", elapsed_accum / runs, "us")

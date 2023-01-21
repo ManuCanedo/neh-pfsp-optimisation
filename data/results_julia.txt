@@ -1,0 +1,91 @@
+Instance name: tai031_50_5
+        Base implementation:
+                NEH makespan: 2733.0
+                NEH makespan with Taillard's acceleration: 2733.0
+                elapsed avg: 215.99531173706055us
+                elapsed min: 185.0128173828125us
+                elapsed max: 4142.045974731445us
+        Optimised implementation:
+                NEH makespan: 2733
+                NEH makespan with Taillard's acceleration: 2733
+                elapsed avg: 31.554460525512695us
+                elapsed min: 28.848648071289062us
+                elapsed max: 70.09506225585938us
+Instance name: tai060_50_20
+        Base implementation:
+                NEH makespan: 4016.0
+                NEH makespan with Taillard's acceleration: 4016.0
+                elapsed avg: 628.3531188964844us
+                elapsed min: 530.0045013427734us
+                elapsed max: 4714.9658203125us
+        Optimised implementation:
+                NEH makespan: 4016
+                NEH makespan with Taillard's acceleration: 4016
+                elapsed avg: 124.96280670166016us
+                elapsed min: 111.10305786132812us
+                elapsed max: 3314.0182495117188us
+Instance name: tai071_100_10
+        Base implementation:
+                NEH makespan: 5874.0
+                NEH makespan with Taillard's acceleration: 5874.0
+                elapsed avg: 1575.4833221435547us
+                elapsed min: 1343.9655303955078us
+                elapsed max: 5221.128463745117us
+        Optimised implementation:
+                NEH makespan: 5874
+                NEH makespan with Taillard's acceleration: 5874
+                elapsed avg: 256.92152976989746us
+                elapsed min: 250.81634521484375us
+                elapsed max: 288.96331787109375us
+Instance name: tai081_100_20
+        Base implementation:
+                NEH makespan: 6531.0
+                NEH makespan with Taillard's acceleration: 6531.0
+                elapsed avg: 2426.741361618042us
+                elapsed min: 2114.7727966308594us
+                elapsed max: 7216.930389404297us
+        Optimised implementation:
+                NEH makespan: 6531
+                NEH makespan with Taillard's acceleration: 6531
+                elapsed avg: 483.717679977417us
+                elapsed min: 473.0224609375us
+                elapsed max: 555.9921264648438us
+Instance name: tai091_200_10
+        Base implementation:
+                NEH makespan: 10981.0
+                NEH makespan with Taillard's acceleration: 10981.0
+                elapsed avg: 6010.347366333008us
+                elapsed min: 5285.024642944336us
+                elapsed max: 8660.078048706055us
+        Optimised implementation:
+                NEH makespan: 10981
+                NEH makespan with Taillard's acceleration: 10981
+                elapsed avg: 1031.3076972961426us
+                elapsed min: 1010.894775390625us
+                elapsed max: 1208.0669403076172us
+Instance name: tai101_200_20
+        Base implementation:
+                NEH makespan: 11739.0
+                NEH makespan with Taillard's acceleration: 11739.0
+                elapsed avg: 9534.693717956543us
+                elapsed min: 8338.92822265625us
+                elapsed max: 14922.857284545898us
+        Optimised implementation:
+                NEH makespan: 11739
+                NEH makespan with Taillard's acceleration: 11739
+                elapsed avg: 1966.4106369018555us
+                elapsed min: 1933.0978393554688us
+                elapsed max: 3367.900848388672us
+Instance name: tai117_500_20
+        Base implementation:
+                NEH makespan: 26785.0
+                NEH makespan with Taillard's acceleration: 26785.0
+                elapsed avg: 48565.037965774536us
+                elapsed min: 41473.8655090332us
+                elapsed max: 113711.83395385742us
+        Optimised implementation:
+                NEH makespan: 26785
+                NEH makespan with Taillard's acceleration: 26785
+                elapsed avg: 12648.256063461304us
+                elapsed min: 12076.854705810547us
+                elapsed max: 16049.861907958984us
