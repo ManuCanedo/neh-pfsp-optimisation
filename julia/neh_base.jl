@@ -126,7 +126,7 @@ function __solve_neh!(jobs, number_jobs, number_machines)
     end
 
     end_time = time()
-    return solution, (end_time - start_time) * 1000
+    return solution, (end_time - start_time) * 1000000
 end
 
 function __calculate_makespan(solution)

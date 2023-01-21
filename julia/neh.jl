@@ -119,7 +119,7 @@ function solve_neh!(jobs::Vector{Job}, number_jobs::Int64, number_machines::Int6
     end
 
     end_time = time()
-    return solution, (end_time - start_time) * 1000
+    return solution, (end_time - start_time) * 1000000
 end
 
 function calculate_makespan(solution::Solution)

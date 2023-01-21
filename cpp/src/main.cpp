@@ -72,7 +72,7 @@ int main() {
   const auto directory = std::string{DATA_PATH};
 
   for (const auto &instance : get_lines(directory + INSTANCES_FILENAME)) {
-    const auto runs = size_t{200};
+    const auto runs = size_t{1000};
     auto min_time =
         std::chrono::microseconds{std::numeric_limits<int64_t>::max()};
     auto max_time = std::chrono::microseconds{0};

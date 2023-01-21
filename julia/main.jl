@@ -49,12 +49,12 @@ function main()
     instances = read_instances(directory, instances_filename)
 
     for instance in instances
-        runs = 200
+        runs = 1000
         min_time = Inf
         max_time = 0
         elapsed_accum = 0
         println("Instance name: ", instance)
-        println("\nBase implementation:")
+        println("\tBase implementation:")
 
         for i in 1:runs
             __jobs, number_jobs, number_machines = __read_instance_data(directory, instance)
@@ -65,20 +65,19 @@ function main()
             elapsed_accum += elapsed
 
             if i == runs
-                println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
-                println("NEH makespan: ", __calculate_makespan(__solution))
-                println("NEH makespan with Taillard's acceleration: ", __solution.makespan)
+                println("\t\tNEH makespan: ", __calculate_makespan(__solution))
+                println("\t\tNEH makespan with Taillard's acceleration: ", __solution.makespan)
             end
         end
-        println("elapsed avg: ", elapsed_accum / runs * 1000)
-        println("elapsed min: ", min_time * 1000)
-        println("elapsed max: ", max_time * 1000)
+        println("\t\telapsed avg: ", elapsed_accum / runs, "us")
+        println("\t\telapsed min: ", min_time, "us")
+        println("\t\telapsed max: ", max_time, "us")
 
         min_time = Inf
         max_time = 0
         elapsed_accum = 0
 
-        println("\nOptimised implementation:")
+        println("\tOptimised implementation:")
         for i in 1:runs
             jobs, number_jobs, number_machines = read_instance_data(directory, instance)
             solution, elapsed = solve_neh!(jobs, number_jobs, number_machines)
@@ -88,14 +87,13 @@ function main()
             elapsed_accum += elapsed
 
             if i == runs
-                println("Number of Jobs: ", number_jobs, "\nNumber of Machines: ", number_machines)
-                println("NEH makespan: ", calculate_makespan(solution))
-                println("NEH makespan with Taillard's acceleration: ", solution.makespan)
+                println("\t\tNEH makespan: ", calculate_makespan(solution))
+                println("\t\tNEH makespan with Taillard's acceleration: ", solution.makespan)
             end
         end
-        println("elapsed avg: ", elapsed_accum / runs * 1000)
-        println("elapsed min: ", min_time * 1000)
-        println("elapsed max: ", max_time * 1000)
+        println("\t\telapsed avg: ", elapsed_accum / runs, "us")
+        println("\t\telapsed min: ", min_time, "us")
+        println("\t\telapsed max: ", max_time, "us")
 
     end
 end
