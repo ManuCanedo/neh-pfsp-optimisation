@@ -37,17 +37,6 @@ struct Solution {
     NumericType makespan{0};
 };
 
-template <typename VectorType>
-constexpr void rotate_right(VectorType &vec, std::size_t start,
-                            std::size_t end) {
-    auto tmp = std::move(vec[end]);
-
-    for (std::size_t j = end; j != start; --j) {
-        vec[j] = std::move(vec[j - 1]);
-    }
-    vec[start] = std::move(tmp);
-}
-
 template <typename NumericType>
 constexpr NumericType max(NumericType lhs, NumericType rhs) {
     return lhs > rhs ? lhs : rhs;
@@ -79,31 +68,31 @@ template <typename NumericType>
 constexpr void populate_q_mat(const std::vector<Job<NumericType>> &jobs,
                               size_t index, Matrix<NumericType> &q_mat) {
     // Set row (index, j) to 0
-    for (auto j = std::size_t{0}; j != q_mat.width(); ++j) {
-        q_mat(index, j) = 0;
-    }
+    std::fill_n(&q_mat(index, 0), q_mat.width(), NumericType{0});
     if (index == 0) {
         return;
     }
+    // Calculate element (index - 1, width - 1)
     q_mat(index - 1, q_mat.width() - 1) =
             jobs[index - 1].processing_times[q_mat.width() - 1];
 
-    for (auto j = q_mat.width() - 2; j != static_cast<std::size_t>(-1); --j) {
+    // Calculate elements (index - 1, j != width - 1)
+    for (auto j = q_mat.width() - 1; j-- != 0;) {
         q_mat(index - 1, j) =
                 jobs[index - 1].processing_times[j] + q_mat(index - 1, j + 1);
     }
     if (index == 1) {
         return;
     }
-    // Calculate elements (i != index, j)
-    for (auto i = index - 2; i != static_cast<std::size_t>(-1); --i) {
-        // Calculate element (i != 0, 0)
+    // Calculate elements (i != index - 1, j)
+    for (auto i = index - 1; i-- != 0;) {
+        // Calculate element (i != index - 1, width - 1)
         q_mat(i, q_mat.width() - 1) =
                 jobs[i].processing_times[q_mat.width() - 1]
                 + q_mat(i + 1, q_mat.width() - 1);
 
-        for (auto j = q_mat.width() - 2; j != static_cast<std::size_t>(-1);
-             --j) {
+        // Calculate elements (i != index - 1, j != width - 1)
+        for (auto j = q_mat.width() - 1; j-- != 0;) {
             q_mat(i, j) = jobs[i].processing_times[j]
                     + max(q_mat(i + 1, j), q_mat(i, j + 1));
         }

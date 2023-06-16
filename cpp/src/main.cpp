@@ -23,7 +23,7 @@ int main() {
     const auto directory = std::string{DATA_PATH};
 
     for (const auto &instance :
-        pfsp::get_lines(directory + INSTANCES_FILENAME)) {
+         pfsp::get_lines(directory + INSTANCES_FILENAME)) {
         const auto runs = size_t{1000};
         auto min_time =
                 std::chrono::microseconds{std::numeric_limits<int64_t>::max()};

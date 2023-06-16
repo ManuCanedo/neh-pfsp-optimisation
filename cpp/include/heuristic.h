@@ -32,7 +32,9 @@ constexpr auto try_shift_improve(Solution<NumericType> &solution,
         }
     }
     if (best_index != index) {
-        rotate_right(solution.jobs, best_index, index);
+        std::rotate(solution.jobs.begin() + best_index,
+                    solution.jobs.begin() + index,
+                    solution.jobs.begin() + index + 1);
     }
     return best_index;
 }
